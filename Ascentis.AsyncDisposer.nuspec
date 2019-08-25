@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Ascentis.AsyncDisposer</id>
+    <version>1.0.0.1</version>
+    <authors>Jose Sebastian Battig</authors>
+    <owners>Ascentis</owners>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/Ascentis/AsyncDisposer</projectUrl>
+    <repository type="git" url="https://github.com/Ascentis/AsyncDisposer.git" branch="master" />
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description></description>
+    <releaseNotes>Initial release</releaseNotes>
+    <copyright>Copyright 2019, Ascentis Corporation</copyright>
+    <tags>IDispose async queue</tags>
+    <dependencies>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\Release\Ascentis.AsyncDisposer.dll" target="lib\net40" />
+    <file src="bin\Release\Ascentis.AsyncDisposer.pdb" target="lib\net40" />
+  </files>
+</package>

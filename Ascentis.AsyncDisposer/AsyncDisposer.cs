@@ -20,9 +20,7 @@ namespace Ascentis.Framework
         }
 
         private static readonly Timer DisposalTimer;
-        // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         private static ConcurrentQueue<IDisposable> _disposables;
-        // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         private static readonly ReaderWriterLockSlim DisposablesLock;
 
         static AsyncDisposer()
@@ -58,7 +56,12 @@ namespace Ascentis.Framework
             })).Change(DisposeInterval, DisposeInterval);
         }
 
-        public static void EnqueueForDisposal(IDisposable disposable)
+        public AsyncDisposer()
+        {
+            throw new InvalidOperationException("Creating instances of AsyncDisposer() not supported. Class designed to be used as a global singleton");
+        }
+
+        public static void Enqueue(IDisposable disposable)
         {
             DisposablesLock.EnterReadLock();
             try
