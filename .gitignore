@@ -6,3 +6,4 @@
 /UnitTestAsyncDisposer/bin/
 /UnitTestAsyncDisposer/obj/
 /TestResults/
+*.nupkg

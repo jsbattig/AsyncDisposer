@@ -9,7 +9,7 @@
     <projectUrl>https://github.com/Ascentis/AsyncDisposer</projectUrl>
     <repository type="git" url="https://github.com/Ascentis/AsyncDisposer.git" branch="master" />
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description></description>
+    <description>Static class that provides functionality to enqueue IDisposable objects for asynchronous disposal guaranteeing minimum time in queue</description>
     <releaseNotes>Initial release</releaseNotes>
     <copyright>Copyright 2019, Ascentis Corporation</copyright>
     <tags>IDispose async queue</tags>
