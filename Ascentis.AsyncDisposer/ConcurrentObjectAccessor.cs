@@ -4,7 +4,8 @@ namespace Ascentis.Framework
 {
     public class ConcurrentObjectAccessor<T> where T : new()
     {
-        public delegate void LockedExecutionDelegate(T reference);
+        public delegate void LockedProcedureDelegate(T reference);
+        public delegate object LockedFunctionDelegate(T reference);
         public delegate bool GateDelegate(T reference);
         private readonly ReaderWriterLockSlim _refLock;
 
@@ -16,12 +17,12 @@ namespace Ascentis.Framework
             _refLock = new ReaderWriterLockSlim();
         }
 
-        public void ExecuteReadLocked(LockedExecutionDelegate executionDelegate)
+        public void ExecuteReadLocked(LockedProcedureDelegate procedureDelegate)
         {
             _refLock.EnterReadLock();
             try
             {
-                executionDelegate(Reference);
+                procedureDelegate(Reference);
             }
             finally
             {
@@ -29,13 +30,26 @@ namespace Ascentis.Framework
             }
         }
 
-        public void SwapNewAndExecute(GateDelegate gateOpenDelegate, LockedExecutionDelegate executionDelegate)
+        public object ExecuteReadLocked(LockedFunctionDelegate functionDelegate)
+        {
+            _refLock.EnterReadLock();
+            try
+            {
+                return functionDelegate(Reference);
+            }
+            finally
+            {
+                _refLock.ExitReadLock();
+            }
+        }
+
+        public object SwapNewAndExecute(GateDelegate gateOpenDelegate, LockedFunctionDelegate functionDelegate)
         {
             _refLock.EnterUpgradeableReadLock();
             try
             {
                 if (!gateOpenDelegate(Reference))
-                    return;
+                    return null;
                 T localReference;
                 _refLock.EnterWriteLock();
                 try
@@ -48,12 +62,31 @@ namespace Ascentis.Framework
                     _refLock.ExitWriteLock();
                 }
 
-                executionDelegate(localReference);
+                return functionDelegate(localReference);
             }
             finally
             {
                 _refLock.ExitUpgradeableReadLock();
             }
+        }
+
+        public void SwapNewAndExecute(GateDelegate gateOpenDelegate, LockedProcedureDelegate procedureDelegate)
+        {
+            SwapNewAndExecute(gateOpenDelegate, reference =>
+            {
+                procedureDelegate(reference);
+                return null;
+            });
+        }
+
+        public object SwapNewAndExecute(LockedFunctionDelegate functionDelegate)
+        {
+            return SwapNewAndExecute(reference => true, functionDelegate);
+        }
+
+        public void SwapNewAndExecute(LockedProcedureDelegate procedureDelegate)
+        {
+            SwapNewAndExecute(reference => true, procedureDelegate);
         }
     }
 }
