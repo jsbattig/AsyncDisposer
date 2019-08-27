@@ -12,7 +12,7 @@
     <description>Static class that provides functionality to enqueue IDisposable objects for asynchronous disposal guaranteeing minimum time in queue</description>
     <releaseNotes>Initial release</releaseNotes>
     <copyright>Copyright 2019, Ascentis Corporation</copyright>
-    <tags>IDispose async queue</tags>
+    <tags>IDisposable async queue</tags>
     <dependencies>
     </dependencies>
   </metadata>
