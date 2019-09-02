@@ -6,7 +6,7 @@ namespace Ascentis.Framework
     public class ConcurrentObjectAccessor<T>
     {
         public delegate void LockedProcedureDelegate(T reference);
-        public delegate object LockedFunctionDelegate(T reference);
+        public delegate TFnRetType LockedFunctionDelegate<out TFnRetType>(T reference);
         public delegate bool GateDelegate(T reference);
 
         private readonly object[] _constructorArgs;
@@ -32,7 +32,7 @@ namespace Ascentis.Framework
             _refLock = new ReaderWriterLockSlim();
         }
 
-        public object ExecuteReadLocked(LockedFunctionDelegate functionDelegate)
+        public TFnReturnType ExecuteReadLocked<TFnReturnType>(LockedFunctionDelegate<TFnReturnType> functionDelegate)
         {
             _refLock.EnterReadLock();
             try
@@ -47,20 +47,20 @@ namespace Ascentis.Framework
 
         public void ExecuteReadLocked(LockedProcedureDelegate procedureDelegate)
         {
-            ExecuteReadLocked(reference =>
+            ExecuteReadLocked((LockedFunctionDelegate<object>) (reference =>
             {
                 procedureDelegate(reference);
                 return null;
-            });
+            }));
         }
 
-        public object SwapNewAndExecute(GateDelegate gateOpenDelegate, LockedFunctionDelegate functionDelegate)
+        public TFnReturnType SwapNewAndExecute<TFnReturnType>(GateDelegate gateOpenDelegate, LockedFunctionDelegate<TFnReturnType> functionDelegate) 
         {
             _refLock.EnterUpgradeableReadLock();
             try
             {
                 if (!gateOpenDelegate(Reference))
-                    return null;
+                    return default;
                 T localReference;
                 _refLock.EnterWriteLock();
                 try
@@ -86,14 +86,14 @@ namespace Ascentis.Framework
 
         public void SwapNewAndExecute(GateDelegate gateOpenDelegate, LockedProcedureDelegate procedureDelegate)
         {
-            SwapNewAndExecute(gateOpenDelegate, reference =>
+            SwapNewAndExecute<object>(gateOpenDelegate,  reference =>
             {
                 procedureDelegate(reference);
                 return null;
             });
         }
 
-        public object SwapNewAndExecute(LockedFunctionDelegate functionDelegate)
+        public TFnReturnType SwapNewAndExecute<TFnReturnType>(LockedFunctionDelegate<TFnReturnType> functionDelegate)
         {
             return SwapNewAndExecute(reference => true, functionDelegate);
         }
