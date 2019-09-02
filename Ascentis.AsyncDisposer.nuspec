@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Ascentis.AsyncDisposer</id>
-    <version>1.0.0.3</version>
+    <version>1.0.0.5</version>
     <authors>Jose Sebastian Battig</authors>
     <owners>Ascentis</owners>
     <license type="expression">MIT</license>
@@ -10,7 +10,7 @@
     <repository type="git" url="https://github.com/Ascentis/AsyncDisposer.git" branch="master" />
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Static class that provides functionality to enqueue IDisposable objects for asynchronous disposal guaranteeing minimum time in queue</description>
-    <releaseNotes>Expanded ConcurrentObjectAccessor to operate with functions returning objects</releaseNotes>
+    <releaseNotes>Added ability to take parameters to pass to target type constructor for ConcurrentObjectAccessor class</releaseNotes>
     <copyright>Copyright 2019, Ascentis Corporation</copyright>
     <tags>IDisposable async queue</tags>
     <dependencies>

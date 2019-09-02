@@ -1,33 +1,35 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 
 namespace Ascentis.Framework
 {
-    public class ConcurrentObjectAccessor<T> where T : new()
+    public class ConcurrentObjectAccessor<T>
     {
         public delegate void LockedProcedureDelegate(T reference);
         public delegate object LockedFunctionDelegate(T reference);
         public delegate bool GateDelegate(T reference);
-        private readonly ReaderWriterLockSlim _refLock;
+
+        private readonly object[] _constructorArgs;
+        private ReaderWriterLockSlim _refLock;
 
         public T Reference { get; private set; }
 
         public ConcurrentObjectAccessor()
         {
-            Reference = new T();
-            _refLock = new ReaderWriterLockSlim();
+            Reference = Activator.CreateInstance<T>();
+            InitRefLock();
         }
 
-        public void ExecuteReadLocked(LockedProcedureDelegate procedureDelegate)
+        public ConcurrentObjectAccessor(params object[] args)
         {
-            _refLock.EnterReadLock();
-            try
-            {
-                procedureDelegate(Reference);
-            }
-            finally
-            {
-                _refLock.ExitReadLock();
-            }
+            _constructorArgs = args;
+            Reference = (T) Activator.CreateInstance(typeof(T), args);
+            InitRefLock();
+        }
+
+        private void InitRefLock()
+        {
+            _refLock = new ReaderWriterLockSlim();
         }
 
         public object ExecuteReadLocked(LockedFunctionDelegate functionDelegate)
@@ -43,6 +45,15 @@ namespace Ascentis.Framework
             }
         }
 
+        public void ExecuteReadLocked(LockedProcedureDelegate procedureDelegate)
+        {
+            ExecuteReadLocked(reference =>
+            {
+                procedureDelegate(reference);
+                return null;
+            });
+        }
+
         public object SwapNewAndExecute(GateDelegate gateOpenDelegate, LockedFunctionDelegate functionDelegate)
         {
             _refLock.EnterUpgradeableReadLock();
@@ -55,7 +66,10 @@ namespace Ascentis.Framework
                 try
                 {
                     localReference = Reference;
-                    Reference = new T();
+                    if (_constructorArgs != null)
+                        Reference = (T) Activator.CreateInstance(typeof(T), _constructorArgs);
+                    else
+                        Reference = Activator.CreateInstance<T>();
                 }
                 finally
                 {
