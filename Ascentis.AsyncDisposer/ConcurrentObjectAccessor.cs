@@ -11,8 +11,24 @@ namespace Ascentis.Framework
 
         private readonly object[] _constructorArgs;
         private ReaderWriterLockSlim _refLock;
+        private T _reference;
 
-        public T Reference { get; private set; }
+        public T Reference
+        {
+            get
+            {
+                _refLock.EnterReadLock();
+                try
+                {
+                    return _reference;
+                }
+                finally
+                {
+                    _refLock.ExitReadLock();
+                }
+            }
+            private set => _reference = value; // Private caller controls locking
+        }
 
         public ConcurrentObjectAccessor()
         {
