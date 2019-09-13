@@ -52,6 +52,7 @@
     <Compile Include="TestClass.cs" />
     <Compile Include="UnitTestAsyncDisposer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnitTestConcurrentObjectAccessor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

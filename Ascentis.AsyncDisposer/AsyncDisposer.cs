@@ -20,39 +20,19 @@ namespace Ascentis.Framework
         }
 
         private static readonly Timer DisposalTimer;
-        private static ConcurrentQueue<IDisposable> _disposables;
-        private static readonly ReaderWriterLockSlim DisposablesLock;
+        private static readonly ConcurrentObjectAccessor<ConcurrentQueue<IDisposable>> Disposables;
 
         static AsyncDisposer()
         {
-            DisposablesLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
-            _disposables = new ConcurrentQueue<IDisposable>();
+            Disposables = new ConcurrentObjectAccessor<ConcurrentQueue<IDisposable>>();
 
             (DisposalTimer = new Timer(state =>
             {
-                DisposablesLock.EnterUpgradeableReadLock();
-                try
+                Disposables.SwapNewAndExecute(disposables => !disposables.IsEmpty, disposables =>
                 {
-                    if (_disposables.IsEmpty)
-                        return;
-                    ConcurrentQueue<IDisposable> localQueue;
-                    DisposablesLock.EnterWriteLock();
-                    try
-                    {
-                        localQueue = _disposables;
-                        _disposables = new ConcurrentQueue<IDisposable>();
-                    }
-                    finally
-                    {
-                        DisposablesLock.ExitWriteLock();
-                    }
-                    while (localQueue.TryDequeue(out var item))
+                    while (disposables.TryDequeue(out var item))
                         item.Dispose();
-                }
-                finally
-                {
-                    DisposablesLock.ExitUpgradeableReadLock();
-                }
+                });
             })).Change(DisposeInterval, DisposeInterval);
         }
 
@@ -63,15 +43,10 @@ namespace Ascentis.Framework
 
         public static void Enqueue(IDisposable disposable)
         {
-            DisposablesLock.EnterReadLock();
-            try
+            Disposables.ExecuteReadLocked(disposables =>
             {
-                _disposables.Enqueue(disposable);
-            }
-            finally
-            {
-                DisposablesLock.ExitReadLock();
-            }
+                disposables.Enqueue(disposable);
+            });
         }
     }
 }
